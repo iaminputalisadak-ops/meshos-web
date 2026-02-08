@@ -1,0 +1,290 @@
+.subscription-plans-page {
+  padding: 40px 0 80px;
+  min-height: 80vh;
+  background: linear-gradient(to bottom, #fff5f9 0%, #ffffff 100%);
+}
+
+.plans-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.plans-header h1 {
+  font-size: 42px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.plans-header p {
+  font-size: 18px;
+  color: #666;
+}
+
+.subscription-active-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #4CAF50;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.subscription-active-banner i {
+  font-size: 20px;
+}
+
+.subscription-active-banner a {
+  color: white;
+  text-decoration: underline;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-bottom: 60px;
+}
+
+.plan-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  position: relative;
+  transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.plan-card.popular {
+  border: 3px solid #f43397;
+  transform: scale(1.05);
+}
+
+.plan-card.popular:hover {
+  transform: scale(1.05) translateY(-8px);
+}
+
+.popular-badge {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #f43397;
+  color: white;
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.plan-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 30px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.plan-name {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+
+.currency {
+  font-size: 24px;
+  font-weight: 600;
+  color: #f43397;
+}
+
+.amount {
+  font-size: 48px;
+  font-weight: 700;
+  color: #f43397;
+}
+
+.period {
+  font-size: 18px;
+  color: #666;
+}
+
+.plan-features {
+  list-style: none;
+  flex: 1;
+  margin-bottom: 30px;
+}
+
+.plan-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  font-size: 15px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.plan-features li i {
+  color: #4CAF50;
+  font-size: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.plan-button {
+  display: block;
+  text-align: center;
+  padding: 16px 24px;
+  background: #f43397;
+  color: white;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background 0.3s, transform 0.3s;
+  text-decoration: none;
+}
+
+.plan-button:hover {
+  background: #d12a7a;
+  transform: translateY(-2px);
+}
+
+.plan-button.popular-btn {
+  background: #f43397;
+  box-shadow: 0 4px 12px rgba(244, 51, 151, 0.3);
+}
+
+.benefits-section {
+  margin-top: 60px;
+  text-align: center;
+}
+
+.benefits-section h2 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 40px;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.benefit-card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s;
+}
+
+.benefit-card:hover {
+  transform: translateY(-4px);
+}
+
+.benefit-card i {
+  font-size: 48px;
+  color: #f43397;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.benefit-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.benefit-card p {
+  font-size: 14px;
+  color: #666;
+}
+
+@media (max-width: 968px) {
+  .plan-card.popular {
+    transform: scale(1);
+  }
+
+  .plan-card.popular:hover {
+    transform: translateY(-8px);
+  }
+}
+
+@media (max-width: 768px) {
+  .subscription-plans-page {
+    padding: 20px 0 40px;
+  }
+
+  .plans-header h1 {
+    font-size: 28px;
+  }
+
+  .plans-header p {
+    font-size: 16px;
+  }
+
+  .plans-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .plan-card {
+    padding: 30px 20px;
+  }
+
+  .plan-name {
+    font-size: 24px;
+  }
+
+  .amount {
+    font-size: 40px;
+  }
+
+  .benefits-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .subscription-active-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .subscription-active-banner a {
+    margin-left: 0;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+

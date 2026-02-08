@@ -1,0 +1,56 @@
+===========================================
+  ADMIN PANEL ACCESS INFORMATION
+===========================================
+
+ERROR: Connection Refused
+-------------------------
+This means your web server is not running!
+
+QUICK FIX:
+----------
+1. Install XAMPP from: https://www.apachefriends.org/
+2. Start Apache in XAMPP Control Panel
+3. Move backend folder to: C:\xampp\htdocs\backend
+4. Access: http://localhost/backend/admin/index.php
+
+ADMIN PANEL URLS:
+-----------------
+After server is running:
+
+Login Page:
+  http://localhost/backend/admin/index.php
+  OR
+  http://localhost/backend/admin/
+
+Dashboard:
+  http://localhost/backend/admin/dashboard.php
+
+LOGIN CREDENTIALS:
+-----------------
+Username: admin
+Password: admin123
+
+ALTERNATIVE (PHP Built-in Server):
+----------------------------------
+If PHP is installed, you can use:
+
+1. Open Command Prompt
+2. Navigate to backend folder
+3. Run: php -S localhost:8000
+4. Access: http://localhost:8000/admin/index.php
+
+SETUP STEPS:
+------------
+1. Install XAMPP (includes Apache + PHP + MySQL)
+2. Start Apache and MySQL in XAMPP
+3. Copy backend folder to C:\xampp\htdocs\
+4. Create database: meesho_ecommerce
+5. Import: backend/database/schema.sql
+6. Run: php backend/database/create_admin.php
+7. Access admin panel URL above
+
+For detailed instructions, see:
+- QUICK_START_ADMIN.md
+- backend/SERVER_SETUP.md
+
+

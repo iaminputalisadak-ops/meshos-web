@@ -1,0 +1,32 @@
+========================================
+  QUICK FIX - Connection Refused Error
+========================================
+
+✅ STEP 1: Backend files copied to XAMPP
+   Location: C:\xampp\htdocs\backend
+
+⚠️ STEP 2: Start Apache in XAMPP
+   1. Open XAMPP Control Panel
+   2. Click "Start" next to Apache
+   3. Wait for it to turn GREEN
+
+✅ STEP 3: Test Connection
+   Open: http://localhost/backend/admin/index.php
+
+========================================
+  Quick Access (After Apache Starts)
+========================================
+
+Admin Panel:
+http://localhost/backend/admin/index.php
+
+Database Setup:
+http://localhost/backend/database/setup_database.php
+
+API Test:
+http://localhost/backend/api/products.php
+
+Login: admin / admin123
+
+========================================
+

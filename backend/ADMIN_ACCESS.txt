@@ -1,0 +1,43 @@
+===========================================
+  ADMIN PANEL - QUICK ACCESS
+===========================================
+
+SERVER STATUS:
+--------------
+The PHP server should now be running on port 8000.
+
+ACCESS URLS:
+------------
+Admin Login Page:
+  http://localhost:8000/admin/index.php
+
+Admin Dashboard:
+  http://localhost:8000/admin/dashboard.php
+
+API Endpoints:
+  http://localhost:8000/api/products.php
+  http://localhost:8000/api/categories.php
+
+LOGIN CREDENTIALS:
+------------------
+Username: admin
+Password: admin123
+
+IMPORTANT:
+----------
+1. Make sure the server is running
+2. If you see "Connection Refused":
+   - Double-click: START_SERVER.bat
+   - Or run: php -S localhost:8000 (in backend folder)
+
+TO START SERVER:
+---------------
+Option 1: Double-click START_SERVER.bat
+Option 2: Open Command Prompt in backend folder and run:
+         php -S localhost:8000
+
+TO STOP SERVER:
+--------------
+Press Ctrl+C in the command window
+
+

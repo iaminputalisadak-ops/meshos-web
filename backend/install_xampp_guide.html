@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Install XAMPP - Quick Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 { color: #333; }
+        h2 { color: #667eea; margin-top: 20px; }
+        .step {
+            background: #e3f2fd;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #2196F3;
+        }
+        .btn {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 5px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>🚀 Quick Fix: Install XAMPP</h1>
+        <p>Your PHP server is not running. The easiest solution is to install XAMPP.</p>
+    </div>
+
+    <div class="box">
+        <h2>Step 1: Download XAMPP</h2>
+        <div class="step">
+            <p><strong>1.</strong> Click the button below to download XAMPP</p>
+            <a href="https://www.apachefriends.org/download.html" class="btn" target="_blank">Download XAMPP</a>
+            <p><strong>2.</strong> Choose: <code>XAMPP for Windows</code> (PHP 8.x version)</p>
+        </div>
+    </div>
+
+    <div class="box">
+        <h2>Step 2: Install XAMPP</h2>
+        <div class="step">
+            <p><strong>1.</strong> Run the installer</p>
+            <p><strong>2.</strong> Select components: <strong>Apache</strong>, <strong>MySQL</strong>, <strong>PHP</strong></p>
+            <p><strong>3.</strong> Install to default location: <code>C:\xampp</code></p>
+            <p><strong>4.</strong> Complete the installation</p>
+        </div>
+    </div>
+
+    <div class="box">
+        <h2>Step 3: Start Apache</h2>
+        <div class="step">
+            <p><strong>1.</strong> Open <strong>XAMPP Control Panel</strong></p>
+            <p><strong>2.</strong> Click <strong>START</strong> button next to <strong>Apache</strong></p>
+            <p><strong>3.</strong> Wait until it shows <strong>"Running"</strong> (green)</p>
+        </div>
+    </div>
+
+    <div class="box">
+        <h2>Step 4: Move Your Files</h2>
+        <div class="step">
+            <p><strong>Option A:</strong> Copy backend folder</p>
+            <p>From: <code>C:\Users\km450\Downloads\startup\backend</code></p>
+            <p>To: <code>C:\xampp\htdocs\backend</code></p>
+            <p><strong>Option B:</strong> Move entire project</p>
+            <p>From: <code>C:\Users\km450\Downloads\startup</code></p>
+            <p>To: <code>C:\xampp\htdocs\startup</code></p>
+        </div>
+    </div>
+
+    <div class="box">
+        <h2>Step 5: Access Admin Panel</h2>
+        <div class="step">
+            <p><strong>Open browser and go to:</strong></p>
+            <p style="font-size: 18px; font-weight: bold; color: #2196F3;">
+                http://localhost/backend/admin/index.php
+            </p>
+            <p><strong>Login:</strong></p>
+            <p>Username: <code>admin</code></p>
+            <p>Password: <code>admin123</code></p>
+        </div>
+    </div>
+
+    <div class="box warning">
+        <h2>⚠️ Important Notes</h2>
+        <ul>
+            <li>Keep XAMPP Control Panel open while using admin panel</li>
+            <li>Apache must be running (green status)</li>
+            <li>If port 80 is busy, XAMPP will ask to use a different port</li>
+            <li>After installation, you can access: <code>http://localhost</code> to see XAMPP welcome page</li>
+        </ul>
+    </div>
+
+    <div class="box">
+        <h2>Alternative: Use XAMPP's PHP for Built-in Server</h2>
+        <div class="step">
+            <p>If you want to use port 8000 instead:</p>
+            <p><strong>1.</strong> Open Command Prompt</p>
+            <p><strong>2.</strong> Navigate to backend folder</p>
+            <p><strong>3.</strong> Run:</p>
+            <code style="display: block; padding: 10px; background: #f4f4f4; margin: 10px 0;">
+                C:\xampp\php\php.exe -S localhost:8000
+            </code>
+            <p><strong>4.</strong> Access: <code>http://localhost:8000/admin/index.php</code></p>
+        </div>
+    </div>
+</body>
+</html>
+
+

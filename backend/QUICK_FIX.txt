@@ -1,0 +1,49 @@
+===========================================
+  QUICK FIX - SERVER NOT RUNNING
+===========================================
+
+PROBLEM:
+--------
+Connection Refused = PHP Server is NOT running!
+
+SOLUTION 1: Use XAMPP (RECOMMENDED)
+------------------------------------
+1. Download XAMPP: https://www.apachefriends.org/
+2. Install it
+3. Open XAMPP Control Panel
+4. Click START next to Apache
+5. Move backend folder to: C:\xampp\htdocs\backend
+6. Access: http://localhost/backend/admin/index.php
+
+SOLUTION 2: Start PHP Server Manually
+--------------------------------------
+1. Open Command Prompt (as Administrator)
+2. Navigate to backend folder:
+   cd C:\Users\km450\Downloads\startup\backend
+
+3. If PHP is installed, run:
+   php -S localhost:8000
+
+4. If PHP is NOT installed, use XAMPP's PHP:
+   C:\xampp\php\php.exe -S localhost:8000
+
+5. Keep the window open and access:
+   http://localhost:8000/admin/index.php
+
+SOLUTION 3: Use the Batch File
+-------------------------------
+1. Double-click: START_SERVER_NOW.bat
+2. Keep the window open
+3. Access: http://localhost:8000/admin/index.php
+
+IMPORTANT:
+----------
+- The server MUST be running to access the admin panel
+- Keep the command window open while using admin panel
+- If you close the window, server stops!
+
+CURRENT STATUS:
+--------------
+Server is NOT running. Follow one of the solutions above.
+
+
