@@ -21,9 +21,18 @@ require_once 'includes/header.php';
         </button>
     </div>
     
+    <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="loadCategories()" title="Refresh Categories">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+        <a href="seed_categories.php" class="btn btn-secondary" target="_blank">
+            <i class="fas fa-seedling"></i> Seed Default Categories
+        </a>
+    </div>
+    
     <div class="table-wrapper">
         <div id="categoriesTable">
-            <p>Loading categories...</p>
+            <p class="loading-text">Loading categories...</p>
         </div>
     </div>
 </div>
@@ -73,14 +82,19 @@ let editingCategoryId = null;
 
 async function loadCategories() {
     try {
+        const container = document.getElementById('categoriesTable');
+        container.innerHTML = '<p class="loading-text">Loading categories...</p>';
+        
         const data = await apiRequest('../api/categories.php');
         
         if (data.success) {
             displayCategories(data.data || []);
         } else {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-tags"></i><h3>No Categories</h3><p>Add your first category to get started</p></div>';
             showMessage(data.message || 'Failed to load categories', 'error');
         }
     } catch (error) {
+        document.getElementById('categoriesTable').innerHTML = '<div class="empty-state"><i class="fas fa-tags"></i><h3>No Categories</h3><p>Add your first category to get started</p></div>';
         showMessage('Error loading categories', 'error');
     }
 }
@@ -93,29 +107,68 @@ function displayCategories(categories) {
         return;
     }
     
-    let html = '<table><thead><tr><th>ID</th><th>Icon</th><th>Name</th><th>Image</th><th>Products</th><th>Actions</th></tr></thead><tbody>';
+    // Create a nice table with all category details
+    let html = `
+        <div style="margin-bottom: 20px;">
+            <p><strong>Total Categories:</strong> ${categories.length}</p>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Icon</th>
+                    <th>Category Name</th>
+                    <th>Slug</th>
+                    <th>Image</th>
+                    <th>Products</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
     
     categories.forEach(category => {
+        const createdDate = category.created_at ? new Date(category.created_at).toLocaleDateString() : 'N/A';
+        const productCount = category.product_count || 0;
+        
         html += `
             <tr>
-                <td>${category.id}</td>
-                <td>${category.icon || '—'}</td>
-                <td>${category.name}</td>
-                <td><img src="${category.image || 'https://via.placeholder.com/50'}" alt="${category.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;" onerror="this.src='https://via.placeholder.com/50'"></td>
-                <td>${category.product_count || 0}</td>
+                <td><strong>#${category.id}</strong></td>
+                <td style="font-size: 24px; text-align: center;">${category.icon || '📦'}</td>
+                <td><strong>${category.name}</strong></td>
+                <td><code style="background: #f4f4f4; padding: 4px 8px; border-radius: 4px;">${category.slug || '—'}</code></td>
                 <td>
-                    <button class="btn btn-success btn-sm" onclick="editCategory(${category.id})">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteCategory(${category.id})">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
+                    <img src="${category.image || 'https://via.placeholder.com/50'}" 
+                         alt="${category.name}" 
+                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 2px solid #e0e0e0;" 
+                         onerror="this.src='https://via.placeholder.com/50'">
+                </td>
+                <td>
+                    <span class="badge ${productCount > 0 ? 'badge-success' : 'badge-warning'}">
+                        ${productCount} ${productCount === 1 ? 'product' : 'products'}
+                    </span>
+                </td>
+                <td style="color: #666; font-size: 12px;">${createdDate}</td>
+                <td>
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <button class="btn btn-success btn-sm" onclick="editCategory(${category.id})" title="Edit Category">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCategory(${category.id})" title="Delete Category">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
     });
     
-    html += '</tbody></table>';
+    html += `
+            </tbody>
+        </table>
+    `;
+    
     container.innerHTML = html;
 }
 
@@ -129,7 +182,8 @@ function showAddCategoryModal() {
 
 async function editCategory(id) {
     try {
-        const data = await apiRequest(`../api/categories.php?id=${id}`);
+        const response = await fetch(`../api/categories.php?id=${id}`);
+        const data = await response.json();
         
         if (data.success && data.data) {
             const category = data.data;

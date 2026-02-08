@@ -20,8 +20,10 @@ require_once 'includes/header.php';
         <div class="stat-card-header">
             <div>
                 <h3>Total Products</h3>
-                <div class="value" id="totalProducts">-</div>
-                <div class="change" id="productsChange">Loading...</div>
+                <div class="value" id="totalProducts">
+                    <span class="loading-spinner"></span>
+                </div>
+                <div class="change loading-text" id="productsChange">Loading...</div>
             </div>
             <div class="stat-card-icon">
                 <i class="fas fa-box"></i>
@@ -33,8 +35,10 @@ require_once 'includes/header.php';
         <div class="stat-card-header">
             <div>
                 <h3>Categories</h3>
-                <div class="value" id="totalCategories">-</div>
-                <div class="change" id="categoriesChange">Loading...</div>
+                <div class="value" id="totalCategories">
+                    <span class="loading-spinner"></span>
+                </div>
+                <div class="change loading-text" id="categoriesChange">Loading...</div>
             </div>
             <div class="stat-card-icon">
                 <i class="fas fa-tags"></i>
@@ -46,8 +50,10 @@ require_once 'includes/header.php';
         <div class="stat-card-header">
             <div>
                 <h3>Total Orders</h3>
-                <div class="value" id="totalOrders">-</div>
-                <div class="change" id="ordersChange">Loading...</div>
+                <div class="value" id="totalOrders">
+                    <span class="loading-spinner"></span>
+                </div>
+                <div class="change loading-text" id="ordersChange">Loading...</div>
             </div>
             <div class="stat-card-icon">
                 <i class="fas fa-shopping-cart"></i>
@@ -59,13 +65,40 @@ require_once 'includes/header.php';
         <div class="stat-card-header">
             <div>
                 <h3>Total Users</h3>
-                <div class="value" id="totalUsers">-</div>
-                <div class="change" id="usersChange">Loading...</div>
+                <div class="value" id="totalUsers">
+                    <span class="loading-spinner"></span>
+                </div>
+                <div class="change loading-text" id="usersChange">Loading...</div>
             </div>
             <div class="stat-card-icon">
                 <i class="fas fa-users"></i>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Database Tables Overview -->
+<div class="section">
+    <div class="section-header">
+        <h2><i class="fas fa-database"></i> Database Tables</h2>
+        <button class="btn btn-primary" onclick="refreshTables()">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Table Name</th>
+                    <th>Rows</th>
+                    <th>Size</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="tablesList">
+                <tr><td colspan="4">Loading tables...</td></tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -110,15 +143,35 @@ async function loadDashboard() {
         const productsData = await productsRes.json();
         
         if (productsData.success) {
-            document.getElementById('totalProducts').textContent = productsData.total || 0;
+            const totalProducts = productsData.total || productsData.data?.length || 0;
+            document.getElementById('totalProducts').textContent = totalProducts;
+            document.getElementById('productsChange').textContent = totalProducts > 0 ? 'Active' : 'No products';
+            document.getElementById('productsChange').classList.remove('loading-text');
             displayRecentProducts(productsData.data?.slice(0, 5) || []);
+        } else {
+            document.getElementById('totalProducts').textContent = '0';
+            document.getElementById('productsChange').textContent = 'Error loading';
+            document.getElementById('productsChange').classList.remove('loading-text');
         }
         
         // Load Categories
-        const categoriesRes = await fetch('../api/categories.php');
-        const categoriesData = await categoriesRes.json();
-        if (categoriesData.success) {
-            document.getElementById('totalCategories').textContent = categoriesData.data?.length || 0;
+        try {
+            const categoriesRes = await fetch('../api/categories.php');
+            const categoriesData = await categoriesRes.json();
+            if (categoriesData.success) {
+                const totalCategories = categoriesData.data?.length || 0;
+                document.getElementById('totalCategories').textContent = totalCategories;
+                document.getElementById('categoriesChange').textContent = totalCategories > 0 ? 'Active' : 'No categories';
+                document.getElementById('categoriesChange').classList.remove('loading-text');
+            } else {
+                document.getElementById('totalCategories').textContent = '0';
+                document.getElementById('categoriesChange').textContent = 'Error loading';
+                document.getElementById('categoriesChange').classList.remove('loading-text');
+            }
+        } catch (e) {
+            document.getElementById('totalCategories').textContent = '0';
+            document.getElementById('categoriesChange').textContent = 'Error loading';
+            document.getElementById('categoriesChange').classList.remove('loading-text');
         }
         
         // Load Orders (if API exists)
@@ -126,11 +179,21 @@ async function loadDashboard() {
             const ordersRes = await fetch('../api/orders.php');
             const ordersData = await ordersRes.json();
             if (ordersData.success) {
-                document.getElementById('totalOrders').textContent = ordersData.total || 0;
+                const totalOrders = ordersData.total || ordersData.data?.length || 0;
+                document.getElementById('totalOrders').textContent = totalOrders;
+                document.getElementById('ordersChange').textContent = totalOrders > 0 ? 'Active' : 'No orders';
+                document.getElementById('ordersChange').classList.remove('loading-text');
                 displayRecentOrders(ordersData.data?.slice(0, 5) || []);
+            } else {
+                document.getElementById('totalOrders').textContent = '0';
+                document.getElementById('ordersChange').textContent = 'No orders yet';
+                document.getElementById('ordersChange').classList.remove('loading-text');
+                document.getElementById('recentOrders').innerHTML = '<p class="empty-state">No orders yet</p>';
             }
         } catch (e) {
             document.getElementById('totalOrders').textContent = '0';
+            document.getElementById('ordersChange').textContent = 'No orders yet';
+            document.getElementById('ordersChange').classList.remove('loading-text');
             document.getElementById('recentOrders').innerHTML = '<p class="empty-state">No orders yet</p>';
         }
         
@@ -139,16 +202,74 @@ async function loadDashboard() {
             const usersRes = await fetch('../api/users.php');
             const usersData = await usersRes.json();
             if (usersData.success) {
-                document.getElementById('totalUsers').textContent = usersData.total || 0;
+                const totalUsers = usersData.total || usersData.data?.length || 0;
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('usersChange').textContent = totalUsers > 0 ? 'Registered' : 'No users';
+                document.getElementById('usersChange').classList.remove('loading-text');
+            } else {
+                document.getElementById('totalUsers').textContent = '0';
+                document.getElementById('usersChange').textContent = 'No users';
+                document.getElementById('usersChange').classList.remove('loading-text');
             }
         } catch (e) {
             document.getElementById('totalUsers').textContent = '0';
+            document.getElementById('usersChange').textContent = 'No users';
+            document.getElementById('usersChange').classList.remove('loading-text');
         }
+        
+        // Load Database Tables
+        loadDatabaseTables();
         
     } catch (error) {
         console.error('Error loading dashboard:', error);
         showMessage('Error loading dashboard data', 'error');
     }
+}
+
+async function loadDatabaseTables() {
+    try {
+        const response = await fetch('get_tables.php', {
+            credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            displayTables(data.tables || []);
+        } else {
+            document.getElementById('tablesList').innerHTML = '<tr><td colspan="4">Error loading tables</td></tr>';
+        }
+    } catch (error) {
+        console.error('Error loading tables:', error);
+        document.getElementById('tablesList').innerHTML = '<tr><td colspan="4">Error loading tables</td></tr>';
+    }
+}
+
+function displayTables(tables) {
+    const container = document.getElementById('tablesList');
+    
+    if (tables.length === 0) {
+        container.innerHTML = '<tr><td colspan="4">No tables found</td></tr>';
+        return;
+    }
+    
+    let html = '';
+    tables.forEach(table => {
+        html += `
+            <tr>
+                <td><strong>${table.name}</strong></td>
+                <td>${table.rows || 0}</td>
+                <td>${table.size || 'N/A'}</td>
+                <td><span class="badge badge-success">Active</span></td>
+            </tr>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function refreshTables() {
+    loadDatabaseTables();
+    showMessage('Tables refreshed', 'success');
 }
 
 function displayRecentProducts(products) {

@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { products } from '../../data/products';
+import { products as localProducts } from '../../data/products';
+import { useProducts } from '../../hooks/useProducts';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import './Category.css';
 
 const Category = () => {
   const { categoryName } = useParams();
+  const decodedCategory = decodeURIComponent(categoryName);
+  const categorySlug = decodedCategory === 'Popular' ? null : decodedCategory.toLowerCase().replace(/\s+/g, '-');
+  
+  // Fetch from API
+  const { products: apiProducts, loading, error } = useProducts(categorySlug);
+  
+  // Use API data if available, otherwise fallback to local
+  const allProducts = apiProducts.length > 0 ? apiProducts : localProducts;
+  
   const [categoryProducts, setCategoryProducts] = useState([]);
   const [selectedGender, setSelectedGender] = useState('');
   const [sortBy, setSortBy] = useState('Relevance');
@@ -15,11 +25,12 @@ const Category = () => {
     let filtered = [];
     
     // Handle "Popular" category - show all products sorted by rating
-    if (decodeURIComponent(categoryName) === 'Popular') {
-      filtered = [...products];
+    if (decodedCategory === 'Popular') {
+      filtered = [...allProducts];
     } else {
-      filtered = products.filter(
-        (product) => product.category === decodeURIComponent(categoryName)
+      filtered = allProducts.filter(
+        (product) => product.category === decodedCategory || 
+                    product.category?.toLowerCase().replace(/\s+/g, '-') === categorySlug
       );
     }
     
@@ -45,7 +56,7 @@ const Category = () => {
     }
 
     setCategoryProducts(filtered);
-  }, [categoryName, selectedGender, sortBy]);
+  }, [decodedCategory, categorySlug, allProducts, selectedGender, sortBy]);
 
   return (
     <div className="category-page">
@@ -177,7 +188,12 @@ const Category = () => {
 
           {/* Products Grid */}
           <div className="products-container">
-            {categoryProducts.length > 0 ? (
+            {loading ? (
+              <div className="loading-products">
+                <i className="fas fa-spinner fa-spin"></i>
+                <p>Loading products...</p>
+              </div>
+            ) : categoryProducts.length > 0 ? (
               <div className="products-grid">
                 {categoryProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
@@ -187,6 +203,7 @@ const Category = () => {
               <div className="no-products">
                 <i className="fas fa-box-open"></i>
                 <p>No products found in this category</p>
+                {error && <p className="error-message">Error: {error}</p>}
               </div>
             )}
           </div>

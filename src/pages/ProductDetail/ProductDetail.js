@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { products } from '../../data/products';
+import { products as localProducts } from '../../data/products';
+import { useProduct, useProducts } from '../../hooks/useProducts';
 import { useCart } from '../../context/CartContext';
 import './ProductDetail.css';
 
@@ -8,6 +9,11 @@ const ProductDetail = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  
+  // Fetch from API
+  const { product: apiProduct, loading, error } = useProduct(parseInt(productId));
+  
+  // Fallback to local data if API fails
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -16,7 +22,8 @@ const ProductDetail = () => {
   const [imageLoading, setImageLoading] = useState(true);
 
   useEffect(() => {
-    const foundProduct = products.find((p) => p.id === parseInt(productId));
+    // Use API product if available, otherwise fallback to local
+    const foundProduct = apiProduct || localProducts.find((p) => p.id === parseInt(productId));
     setProduct(foundProduct);
     if (foundProduct) {
       setSelectedImage(0);
@@ -26,7 +33,7 @@ const ProductDetail = () => {
       setImageSrc(initialImage);
       setImageError(false);
     }
-  }, [productId]);
+  }, [productId, apiProduct]);
 
   useEffect(() => {
     if (product) {
@@ -37,6 +44,19 @@ const ProductDetail = () => {
     }
   }, [selectedImage, product]);
 
+  if (loading) {
+    return (
+      <div className="product-detail">
+        <div className="container">
+          <div className="loading-product">
+            <i className="fas fa-spinner fa-spin"></i>
+            <p>Loading product...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!product) {
     return (
       <div className="product-detail">
@@ -44,6 +64,7 @@ const ProductDetail = () => {
           <div className="not-found">
             <i className="fas fa-exclamation-circle"></i>
             <p>Product not found</p>
+            {error && <p className="error-message">Error: {error}</p>}
           </div>
         </div>
       </div>

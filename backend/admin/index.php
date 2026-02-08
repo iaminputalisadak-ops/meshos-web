@@ -172,6 +172,15 @@ session_start();
             Username: <code>admin</code><br>
             Password: <code>admin123</code>
         </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #fff3e0; border-radius: 8px; border-left: 4px solid #ff9800;">
+            <strong>⚠️ Having Login Issues?</strong><br>
+            <small>
+                <a href="fix_login_now.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">👉 Fix Login Now</a> | 
+                <a href="../setup.php" target="_blank" style="color: #667eea; text-decoration: underline;">Database Setup</a> | 
+                <a href="test.php" target="_blank" style="color: #667eea; text-decoration: underline;">Test Login</a>
+            </small>
+        </div>
     </div>
     
     <script>
@@ -190,16 +199,68 @@ session_start();
             loadingDiv.style.display = 'block';
             
             try {
-                const response = await fetch('../api/admin/login.php', {
+                // Clear any previous error
+                errorDiv.innerHTML = '';
+                
+                // Use direct login handler (self-contained, no path issues)
+                const loginUrl = 'login_handler.php';
+                
+                console.log('Attempting login to:', loginUrl);
+                
+                const response = await fetch(loginUrl, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     credentials: 'include',
-                    body: JSON.stringify({ username, password })
+                    mode: 'cors',
+                    body: JSON.stringify({ 
+                        username: username.trim(), 
+                        password: password 
+                    })
                 });
                 
-                const data = await response.json();
+                // Check if response is OK
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error(`API not found (404). Check if file exists at: ${loginUrl}`);
+                    }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                let data;
+                let responseText = '';
+                try {
+                    responseText = await response.text();
+                    console.log('Raw response:', responseText);
+                    
+                    // Try to parse JSON
+                    if (responseText.trim() === '') {
+                        throw new Error('Empty response from server');
+                    }
+                    
+                    data = JSON.parse(responseText);
+                } catch (jsonError) {
+                    loadingDiv.style.display = 'none';
+                    let errorMsg = 'Invalid response from server. ';
+                    
+                    // Check if it's a database issue
+                    if (jsonError.message.includes('Empty') || 
+                        (responseText && (responseText.includes('database') || responseText.includes('table') || responseText.includes('MySQL')))) {
+                        errorMsg += 'The database may not be set up. ';
+                    }
+                    
+                    errorMsg += '<br><br>';
+                    errorMsg += '<a href="fix_login_now.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold; margin-right: 10px;">👉 Fix Login Now</a>';
+                    errorMsg += '<a href="../setup.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">👉 Run Database Setup</a>';
+                    
+                    errorDiv.innerHTML = errorMsg;
+                    errorDiv.style.display = 'block';
+                    console.error('JSON Parse Error:', jsonError);
+                    console.error('Response text:', responseText);
+                    return;
+                }
                 
                 loadingDiv.style.display = 'none';
                 
@@ -212,18 +273,70 @@ session_start();
                         window.location.href = 'dashboard.php';
                     }, 1000);
                 } else {
-                    errorDiv.textContent = data.message || 'Login failed. Please check your credentials.';
+                    let errorMsg = data.message || 'Login failed. Please check your credentials.';
+                    
+                    // Check if database setup is needed
+                    if (data.setup_url) {
+                        errorMsg += ' <a href="' + data.setup_url + '" target="_blank" style="color: #667eea; text-decoration: underline;">Setup Database</a>';
+                    }
+                    
+                    // Show additional error details if available
+                    if (data.error) {
+                        console.error('Server Error:', data.error);
+                    }
+                    
+                    errorDiv.innerHTML = errorMsg;
                     errorDiv.style.display = 'block';
                 }
             } catch (error) {
                 loadingDiv.style.display = 'none';
-                errorDiv.textContent = 'Connection error. Please try again.';
+                let errorMsg = 'Connection error. ';
+                
+                // Try to get more details from error
+                if (error.message) {
+                    errorMsg += error.message;
+                }
+                
+                // Add helpful links
+                errorMsg += '<br><br>';
+                errorMsg += '<a href="../EMERGENCY_FIX.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">👉 Run Emergency Fix</a> | ';
+                errorMsg += '<a href="test_direct_login.php" target="_blank" style="color: #667eea; text-decoration: underline;">Test Login API</a>';
+                
+                errorDiv.innerHTML = errorMsg;
                 errorDiv.style.display = 'block';
                 console.error('Error:', error);
             }
         });
         
-        // Check if already logged in
+        // Check database setup first - use relative path
+        fetch('check_setup.php')
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Setup check failed: ' + res.status);
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                const errorDiv = document.getElementById('errorMessage');
+                let errorMsg = data.message || 'Database setup required';
+                if (data.setup_url) {
+                    errorMsg += ' <a href="' + data.setup_url + '" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold; margin-left: 10px;">👉 Setup Database Now</a>';
+                } else {
+                    errorMsg += ' <a href="../setup.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold; margin-left: 10px;">👉 Setup Database Now</a>';
+                }
+                errorDiv.innerHTML = errorMsg;
+                errorDiv.style.display = 'block';
+            }
+        })
+        .catch(err => {
+            console.error('Setup check error:', err);
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.innerHTML = 'Cannot check database status. <a href="fix_login_now.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold; margin-right: 10px;">👉 Fix Login Now</a><a href="../setup.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">👉 Setup Database</a>';
+            errorDiv.style.display = 'block';
+        });
+        
+        // Check if already logged in - use relative path
         fetch('../api/admin/auth.php', {
             credentials: 'include'
         })

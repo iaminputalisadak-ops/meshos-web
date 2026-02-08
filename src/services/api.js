@@ -1,159 +1,175 @@
 /**
  * API Service
- * Handles all API calls to backend
+ * Handles all API calls to the backend
  */
 
-import { API_ENDPOINTS, apiRequest } from '../config/api';
+import API_BASE_URL from '../config/api';
 
-export const productService = {
-  // Get all products
-  getAll: async (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
-    const url = queryString 
-      ? `${API_ENDPOINTS.PRODUCTS}?${queryString}`
-      : API_ENDPOINTS.PRODUCTS;
-    return await apiRequest(url);
+/**
+ * Generic fetch function with error handling
+ */
+async function fetchAPI(endpoint, options = {}) {
+  const url = `${API_BASE_URL}/${endpoint}`;
+  
+  const defaultOptions = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    ...options,
+  };
+
+  try {
+    const response = await fetch(url, defaultOptions);
+    
+    // Check if response is ok
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Network error' }));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.message || 'API request failed');
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Products API
+ */
+export const productsAPI = {
+  /**
+   * Get all products
+   */
+  getAll: async (search = null, limit = 50, offset = 0) => {
+    let endpoint = `products.php?limit=${limit}&offset=${offset}`;
+    if (search) {
+      endpoint += `&search=${encodeURIComponent(search)}`;
+    }
+    const response = await fetchAPI(endpoint);
+    return response.data || [];
   },
 
-  // Get product by ID
+  /**
+   * Get product by ID
+   */
   getById: async (id) => {
-    return await apiRequest(API_ENDPOINTS.PRODUCT_BY_ID(id));
+    const response = await fetchAPI(`products.php?id=${id}`);
+    return response.data;
   },
 
-  // Get products by category
-  getByCategory: async (category, params = {}) => {
-    const queryParams = { category, ...params };
-    const queryString = new URLSearchParams(queryParams).toString();
-    return await apiRequest(`${API_ENDPOINTS.PRODUCTS}?${queryString}`);
-  },
-
-  // Search products
-  search: async (searchTerm, params = {}) => {
-    const queryParams = { search: searchTerm, ...params };
-    const queryString = new URLSearchParams(queryParams).toString();
-    return await apiRequest(`${API_ENDPOINTS.PRODUCTS}?${queryString}`);
+  /**
+   * Get products by category
+   */
+  getByCategory: async (category, search = null, limit = 50, offset = 0) => {
+    let endpoint = `products.php?category=${encodeURIComponent(category)}&limit=${limit}&offset=${offset}`;
+    if (search) {
+      endpoint += `&search=${encodeURIComponent(search)}`;
+    }
+    const response = await fetchAPI(endpoint);
+    return response.data || [];
   },
 };
 
-export const categoryService = {
-  // Get all categories
+/**
+ * Categories API
+ */
+export const categoriesAPI = {
+  /**
+   * Get all categories
+   */
   getAll: async () => {
-    return await apiRequest(API_ENDPOINTS.CATEGORIES);
+    const response = await fetchAPI('categories.php');
+    return response.data || [];
   },
 };
 
-export const cartService = {
-  // Get cart items
-  getCart: async (userId = null) => {
-    const url = userId 
-      ? `${API_ENDPOINTS.CART}?user_id=${userId}`
-      : API_ENDPOINTS.CART;
-    return await apiRequest(url);
+/**
+ * Cart API
+ */
+export const cartAPI = {
+  /**
+   * Get cart items
+   */
+  get: async (sessionId) => {
+    const response = await fetchAPI(`cart.php?session_id=${sessionId}`);
+    return response.data || [];
   },
 
-  // Add to cart
-  addItem: async (productId, quantity = 1, userId = null) => {
-    return await apiRequest(API_ENDPOINTS.CART, {
+  /**
+   * Add item to cart
+   */
+  add: async (productId, quantity = 1, sessionId = null) => {
+    const response = await fetchAPI('cart.php', {
       method: 'POST',
       body: JSON.stringify({
         product_id: productId,
-        quantity,
-        user_id: userId,
+        quantity: quantity,
+        session_id: sessionId,
       }),
     });
+    return response.data;
   },
 
-  // Update cart item
-  updateItem: async (cartId, quantity) => {
-    return await apiRequest(API_ENDPOINTS.CART, {
+  /**
+   * Update cart item
+   */
+  update: async (cartId, quantity) => {
+    const response = await fetchAPI('cart.php', {
       method: 'PUT',
       body: JSON.stringify({
-        cart_id: cartId,
-        quantity,
+        id: cartId,
+        quantity: quantity,
       }),
     });
+    return response.data;
   },
 
-  // Remove from cart
-  removeItem: async (cartId) => {
-    return await apiRequest(`${API_ENDPOINTS.CART}?id=${cartId}`, {
+  /**
+   * Remove item from cart
+   */
+  remove: async (cartId) => {
+    const response = await fetchAPI(`cart.php?id=${cartId}`, {
       method: 'DELETE',
     });
+    return response.data;
   },
 };
 
-export const subscriptionService = {
-  // Get user subscription
-  getSubscription: async (userId) => {
-    return await apiRequest(API_ENDPOINTS.SUBSCRIPTION_BY_USER(userId));
+/**
+ * Subscriptions API
+ */
+export const subscriptionsAPI = {
+  /**
+   * Get all subscription plans
+   */
+  getPlans: async () => {
+    const response = await fetchAPI('subscriptions.php');
+    return response.data || [];
   },
 
-  // Create subscription
-  create: async (userId, planType, price, discountPercentage = 0) => {
-    return await apiRequest(API_ENDPOINTS.SUBSCRIPTIONS, {
+  /**
+   * Create subscription
+   */
+  create: async (planData) => {
+    const response = await fetchAPI('subscriptions.php', {
       method: 'POST',
-      body: JSON.stringify({
-        user_id: userId,
-        plan_type: planType,
-        price,
-        discount_percentage: discountPercentage,
-      }),
+      body: JSON.stringify(planData),
     });
-  },
-
-  // Cancel subscription
-  cancel: async (subscriptionId) => {
-    return await apiRequest(API_ENDPOINTS.SUBSCRIPTIONS, {
-      method: 'PUT',
-      body: JSON.stringify({
-        subscription_id: subscriptionId,
-        status: 'cancelled',
-      }),
-    });
+    return response.data;
   },
 };
 
-export const adminService = {
-  // Admin login
-  login: async (username, password) => {
-    return await apiRequest(API_ENDPOINTS.ADMIN_LOGIN, {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    });
-  },
-
-  // Check admin auth
-  checkAuth: async () => {
-    return await apiRequest(API_ENDPOINTS.ADMIN_AUTH);
-  },
-
-  // Get products (admin)
-  getProducts: async () => {
-    return await apiRequest(API_ENDPOINTS.ADMIN_PRODUCTS);
-  },
-
-  // Create product (admin)
-  createProduct: async (productData) => {
-    return await apiRequest(API_ENDPOINTS.ADMIN_PRODUCTS, {
-      method: 'POST',
-      body: JSON.stringify(productData),
-    });
-  },
-
-  // Update product (admin)
-  updateProduct: async (productData) => {
-    return await apiRequest(API_ENDPOINTS.ADMIN_PRODUCTS, {
-      method: 'PUT',
-      body: JSON.stringify(productData),
-    });
-  },
-
-  // Delete product (admin)
-  deleteProduct: async (productId) => {
-    return await apiRequest(`${API_ENDPOINTS.ADMIN_PRODUCTS}?id=${productId}`, {
-      method: 'DELETE',
-    });
-  },
+export default {
+  products: productsAPI,
+  categories: categoriesAPI,
+  cart: cartAPI,
+  subscriptions: subscriptionsAPI,
 };
-
-

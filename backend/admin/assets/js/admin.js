@@ -5,8 +5,43 @@
 // Toggle Sidebar
 function toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay') || createSidebarOverlay();
+    
     sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+    
+    // Close sidebar when clicking overlay
+    overlay.addEventListener('click', function() {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
 }
+
+// Create sidebar overlay for mobile
+function createSidebarOverlay() {
+    const overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    document.body.appendChild(overlay);
+    return overlay;
+}
+
+// Toggle User Dropdown
+function toggleUserDropdown() {
+    const userMenu = document.querySelector('.user-menu');
+    if (userMenu) {
+        userMenu.classList.toggle('active');
+    }
+}
+
+// Close user dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const userMenu = document.querySelector('.user-menu');
+    const userDropdown = document.querySelector('.user-dropdown');
+    
+    if (userMenu && userDropdown && !userMenu.contains(e.target)) {
+        userMenu.classList.remove('active');
+    }
+});
 
 // Show Message
 function showMessage(message, type = 'info') {

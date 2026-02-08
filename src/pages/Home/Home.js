@@ -1,12 +1,22 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { categories, products, brands } from '../../data/products';
+import { categories as localCategories, products as localProducts, brands } from '../../data/products';
 import { useSubscription } from '../../context/SubscriptionContext';
+import { useProducts } from '../../hooks/useProducts';
+import { useCategories } from '../../hooks/useCategories';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import './Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
+  // Fetch from API with fallback to local data
+  const { products: apiProducts, loading: productsLoading } = useProducts();
+  const { categories: apiCategories, loading: categoriesLoading } = useCategories();
+  
+  // Use API data if available, otherwise fallback to local
+  const products = apiProducts.length > 0 ? apiProducts : localProducts;
+  const categories = apiCategories.length > 0 ? apiCategories : localCategories;
+  
   const featuredProducts = products.slice(0, 12);
   const trendingProducts = products.slice(4, 16);
   // Original Brands with proper category mapping

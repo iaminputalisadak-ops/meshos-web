@@ -112,14 +112,19 @@ let editingProductId = null;
 // Load Products
 async function loadProducts() {
     try {
+        const container = document.getElementById('productsTable');
+        container.innerHTML = '<p class="loading-text">Loading products...</p>';
+        
         const data = await apiRequest('../api/admin/products.php');
         
         if (data.success) {
             displayProducts(data.data || []);
         } else {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><h3>No Products</h3><p>Add your first product to get started</p></div>';
             showMessage(data.message || 'Failed to load products', 'error');
         }
     } catch (error) {
+        document.getElementById('productsTable').innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><h3>No Products</h3><p>Add your first product to get started</p></div>';
         showMessage('Error loading products', 'error');
     }
 }
@@ -153,14 +158,15 @@ function displayProducts(products) {
     let html = '<table><thead><tr><th>ID</th><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead><tbody>';
     
     products.forEach(product => {
+        const inStock = product.in_stock !== undefined ? Boolean(product.in_stock) : true;
         html += `
             <tr>
                 <td>${product.id}</td>
-                <td><img src="${product.image || 'https://via.placeholder.com/50'}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/50'"></td>
-                <td>${product.name}</td>
+                <td><img src="${product.image || 'https://via.placeholder.com/50'}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;" onerror="this.src='https://via.placeholder.com/50'"></td>
+                <td><strong>${product.name}</strong></td>
                 <td>${product.category_name || 'N/A'}</td>
-                <td>₹${product.price}</td>
-                <td><span class="badge ${product.in_stock ? 'badge-success' : 'badge-danger'}">${product.in_stock ? 'In Stock' : 'Out of Stock'}</span></td>
+                <td>₹${parseFloat(product.price || 0).toFixed(2)}</td>
+                <td><span class="badge ${inStock ? 'badge-success' : 'badge-danger'}">${inStock ? 'In Stock' : 'Out of Stock'}</span></td>
                 <td>
                     <button class="btn btn-success btn-sm" onclick="editProduct(${product.id})">
                         <i class="fas fa-edit"></i> Edit
@@ -187,7 +193,8 @@ function showAddProductModal() {
 
 async function editProduct(id) {
     try {
-        const data = await apiRequest(`../api/admin/products.php?id=${id}`);
+        const response = await fetch(`../api/products.php?id=${id}`);
+        const data = await response.json();
         
         if (data.success && data.data) {
             const product = data.data;
@@ -198,13 +205,13 @@ async function editProduct(id) {
             document.getElementById('productName').value = product.name || '';
             document.getElementById('productCategory').value = product.category_id || '';
             document.getElementById('productPrice').value = product.price || '';
-            document.getElementById('productOriginalPrice').value = product.original_price || '';
-            document.getElementById('productDiscount').value = product.discount || '';
+            document.getElementById('productOriginalPrice').value = product.original_price || product.price || '';
+            document.getElementById('productDiscount').value = product.discount || 0;
             document.getElementById('productImage').value = product.image || '';
             document.getElementById('productDescription').value = product.description || '';
-            document.getElementById('productRating').value = product.rating || '';
-            document.getElementById('productReviews').value = product.reviews || '';
-            document.getElementById('productInStock').checked = product.in_stock || false;
+            document.getElementById('productRating').value = product.rating || 0;
+            document.getElementById('productReviews').value = product.reviews || 0;
+            document.getElementById('productInStock').checked = product.in_stock !== undefined ? Boolean(product.in_stock) : true;
             
             showModal('productModal');
         } else {
@@ -224,6 +231,22 @@ async function saveProduct(e) {
     // Convert checkbox value
     productData.in_stock = document.getElementById('productInStock').checked ? 1 : 0;
     
+    // Ensure original_price is set
+    if (!productData.original_price || productData.original_price === '') {
+        productData.original_price = productData.price;
+    }
+    
+    // Calculate discount if not provided
+    if (!productData.discount || productData.discount === '') {
+        const price = parseFloat(productData.price);
+        const originalPrice = parseFloat(productData.original_price);
+        if (originalPrice > price) {
+            productData.discount = Math.round(((originalPrice - price) / originalPrice) * 100);
+        } else {
+            productData.discount = 0;
+        }
+    }
+    
     try {
         const url = '../api/admin/products.php';
         const method = editingProductId ? 'PUT' : 'POST';
@@ -241,7 +264,7 @@ async function saveProduct(e) {
             showMessage(data.message || 'Failed to save product', 'error');
         }
     } catch (error) {
-        showMessage('Error saving product', 'error');
+        showMessage('Error saving product: ' + error.message, 'error');
     }
 }
 
@@ -262,7 +285,7 @@ async function deleteProduct(id) {
             showMessage(data.message || 'Failed to delete product', 'error');
         }
     } catch (error) {
-        showMessage('Error deleting product', 'error');
+        showMessage('Error deleting product: ' + error.message, 'error');
     }
 }
 

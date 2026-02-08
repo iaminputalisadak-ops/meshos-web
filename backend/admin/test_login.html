@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Admin Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .test-section { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .pass { color: green; }
+        .fail { color: red; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f0f0f0; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Admin Login Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Database Check</h3>
+        <button onclick="testDatabase()">Test Database</button>
+        <div id="dbResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Login Test</h3>
+        <input type="text" id="testUsername" placeholder="Username" value="admin" style="padding: 8px; margin: 5px;">
+        <input type="password" id="testPassword" placeholder="Password" value="admin123" style="padding: 8px; margin: 5px;">
+        <button onclick="testLogin()">Test Login</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Debug Info</h3>
+        <button onclick="getDebugInfo()">Get Debug Info</button>
+        <div id="debugResult"></div>
+    </div>
+    
+    <script>
+        async function testDatabase() {
+            const resultDiv = document.getElementById('dbResult');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('debug_login.php');
+                const data = await response.json();
+                
+                let html = '<h4>Results:</h4><ul>';
+                data.checks.forEach(check => {
+                    const statusClass = check.status === 'PASS' ? 'pass' : 'fail';
+                    html += `<li class="${statusClass}"><strong>${check.name}:</strong> ${check.status} - ${check.message}</li>`;
+                });
+                html += '</ul>';
+                
+                if (data.success) {
+                    html = '<div class="pass">✅ All checks passed!</div>' + html;
+                } else {
+                    html = '<div class="fail">❌ Some checks failed</div>' + html;
+                }
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="fail">Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            const username = document.getElementById('testUsername').value;
+            const password = document.getElementById('testPassword').value;
+            
+            resultDiv.innerHTML = 'Logging in...';
+            
+            try {
+                const response = await fetch('../api/admin/login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="pass">✅ Login successful!<br>Username: ${data.data.username}<br>Role: ${data.data.role}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="fail">❌ Login failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="fail">Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function getDebugInfo() {
+            const resultDiv = document.getElementById('debugResult');
+            resultDiv.innerHTML = 'Loading...';
+            
+            try {
+                const response = await fetch('debug_login.php');
+                const data = await response.json();
+                resultDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="fail">Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
+

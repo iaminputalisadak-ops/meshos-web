@@ -66,12 +66,14 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                     <h1><?php echo isset($pageTitle) ? $pageTitle : 'Dashboard'; ?></h1>
                 </div>
                 <div class="header-right">
-                    <div class="user-menu">
+                    <div class="user-menu" onclick="toggleUserDropdown()">
                         <i class="fas fa-user-circle"></i>
                         <span><?php echo htmlspecialchars($_SESSION['admin_username']); ?></span>
+                        <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 8px;"></i>
                         <div class="user-dropdown">
+                            <a href="profile.php"><i class="fas fa-user-circle"></i> Profile</a>
                             <a href="settings.php"><i class="fas fa-cog"></i> Settings</a>
-                            <a href="?logout=1"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                            <a href="logout.php" onclick="return confirm('Are you sure you want to logout?')"><i class="fas fa-sign-out-alt"></i> Logout</a>
                         </div>
                     </div>
                 </div>

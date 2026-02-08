@@ -1,6 +1,6 @@
 <?php
 /**
- * Categories API Endpoint
+ * Brands API Endpoint
  */
 
 require_once '../config/database.php';
@@ -13,146 +13,112 @@ try {
     $method = $_SERVER['REQUEST_METHOD'];
     
     if ($method === 'GET') {
-        $categoryId = isset($_GET['id']) ? intval($_GET['id']) : null;
+        $stmt = $conn->query("SELECT * FROM brands ORDER BY name ASC");
+        $brands = [];
         
-        if ($categoryId) {
-            // Get single category
-            $stmt = $conn->prepare("SELECT * FROM categories WHERE id = ?");
-            $stmt->bind_param("i", $categoryId);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            
-            if ($result->num_rows === 0) {
-                http_response_code(404);
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Category not found'
-                ]);
-            } else {
-                echo json_encode([
-                    'success' => true,
-                    'data' => $result->fetch_assoc()
-                ]);
-            }
-            $stmt->close();
-        } else {
-            // Get all categories
-            $stmt = $conn->query("
-                SELECT c.*, COUNT(p.id) as product_count 
-                FROM categories c 
-                LEFT JOIN products p ON c.id = p.category_id 
-                GROUP BY c.id 
-                ORDER BY c.name ASC
-            ");
-            $categories = [];
-            
-            while ($row = $stmt->fetch_assoc()) {
-                $categories[] = $row;
-            }
-            
-            echo json_encode([
-                'success' => true,
-                'data' => $categories
-            ]);
-            
-            $stmt->close();
+        while ($row = $stmt->fetch_assoc()) {
+            $brands[] = $row;
         }
+        
+        echo json_encode([
+            'success' => true,
+            'data' => $brands
+        ]);
+        
+        $stmt->close();
     } elseif ($method === 'POST') {
-        // Create category
         $data = json_decode(file_get_contents('php://input'), true);
         
         if (!isset($data['name'])) {
             http_response_code(400);
             echo json_encode([
                 'success' => false,
-                'message' => 'Category name is required'
+                'message' => 'Brand name is required'
             ]);
             exit;
         }
         
         $name = $data['name'];
-        $slug = isset($data['slug']) ? $data['slug'] : strtolower(str_replace(' ', '-', $name));
+        $logoUrl = isset($data['logo_url']) ? $data['logo_url'] : '';
         
-        $stmt = $conn->prepare("INSERT INTO categories (name, slug) VALUES (?, ?)");
-        $stmt->bind_param("ss", $name, $slug);
+        $stmt = $conn->prepare("INSERT INTO brands (name, logo_url) VALUES (?, ?)");
+        $stmt->bind_param("ss", $name, $logoUrl);
         
         if ($stmt->execute()) {
             echo json_encode([
                 'success' => true,
-                'message' => 'Category created successfully',
+                'message' => 'Brand created successfully',
                 'data' => ['id' => $conn->insert_id]
             ]);
         } else {
             http_response_code(500);
             echo json_encode([
                 'success' => false,
-                'message' => 'Failed to create category',
+                'message' => 'Failed to create brand',
                 'error' => $conn->error
             ]);
         }
         
         $stmt->close();
     } elseif ($method === 'PUT') {
-        // Update category
         $data = json_decode(file_get_contents('php://input'), true);
         
         if (!isset($data['id'])) {
             http_response_code(400);
             echo json_encode([
                 'success' => false,
-                'message' => 'Category ID is required'
+                'message' => 'Brand ID is required'
             ]);
             exit;
         }
         
         $id = intval($data['id']);
         $name = $data['name'] ?? '';
-        $slug = isset($data['slug']) ? $data['slug'] : strtolower(str_replace(' ', '-', $name));
+        $logoUrl = $data['logo_url'] ?? '';
         
-        $stmt = $conn->prepare("UPDATE categories SET name = ?, slug = ? WHERE id = ?");
-        $stmt->bind_param("ssi", $name, $slug, $id);
+        $stmt = $conn->prepare("UPDATE brands SET name = ?, logo_url = ? WHERE id = ?");
+        $stmt->bind_param("ssi", $name, $logoUrl, $id);
         
         if ($stmt->execute()) {
             echo json_encode([
                 'success' => true,
-                'message' => 'Category updated successfully'
+                'message' => 'Brand updated successfully'
             ]);
         } else {
             http_response_code(500);
             echo json_encode([
                 'success' => false,
-                'message' => 'Failed to update category',
+                'message' => 'Failed to update brand',
                 'error' => $conn->error
             ]);
         }
         
         $stmt->close();
     } elseif ($method === 'DELETE') {
-        // Delete category
         $id = isset($_GET['id']) ? intval($_GET['id']) : null;
         
         if (!$id) {
             http_response_code(400);
             echo json_encode([
                 'success' => false,
-                'message' => 'Category ID is required'
+                'message' => 'Brand ID is required'
             ]);
             exit;
         }
         
-        $stmt = $conn->prepare("DELETE FROM categories WHERE id = ?");
+        $stmt = $conn->prepare("DELETE FROM brands WHERE id = ?");
         $stmt->bind_param("i", $id);
         
         if ($stmt->execute()) {
             echo json_encode([
                 'success' => true,
-                'message' => 'Category deleted successfully'
+                'message' => 'Brand deleted successfully'
             ]);
         } else {
             http_response_code(500);
             echo json_encode([
                 'success' => false,
-                'message' => 'Failed to delete category',
+                'message' => 'Failed to delete brand',
                 'error' => $conn->error
             ]);
         }
@@ -176,5 +142,4 @@ try {
     closeDBConnection($conn);
 }
 ?>
-
 
