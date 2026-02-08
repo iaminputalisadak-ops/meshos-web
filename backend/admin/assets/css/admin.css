@@ -186,6 +186,22 @@ body {
     background: var(--light-color);
 }
 
+.user-dropdown a.logout-link {
+    color: var(--danger-color);
+    border-top: 1px solid var(--border-color);
+    margin-top: 5px;
+    padding-top: 15px;
+}
+
+.user-dropdown a.logout-link:hover {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.user-dropdown a span {
+    flex: 1;
+}
+
 .user-dropdown a i {
     margin-right: 10px;
     width: 20px;
@@ -621,6 +637,7 @@ table img:hover {
 .user-dropdown a {
     display: flex;
     align-items: center;
+    gap: 10px;
     padding: 12px 20px;
     color: var(--dark-color);
     text-decoration: none;

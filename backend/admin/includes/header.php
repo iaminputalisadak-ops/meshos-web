@@ -52,6 +52,10 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
                 </a>
+                <a href="profile.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profile</span>
+                </a>
             </nav>
         </aside>
 
@@ -71,9 +75,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                         <span><?php echo htmlspecialchars($_SESSION['admin_username']); ?></span>
                         <i class="fas fa-chevron-down" style="font-size: 12px; margin-left: 8px;"></i>
                         <div class="user-dropdown">
-                            <a href="profile.php"><i class="fas fa-user-circle"></i> Profile</a>
-                            <a href="settings.php"><i class="fas fa-cog"></i> Settings</a>
-                            <a href="logout.php" onclick="return confirm('Are you sure you want to logout?')"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                            <a href="profile.php"><i class="fas fa-user-circle"></i> <span>Profile</span></a>
+                            <a href="settings.php"><i class="fas fa-cog"></i> <span>Settings</span></a>
+                            <a href="logout.php" class="logout-link" onclick="event.preventDefault(); if(confirmLogout()) { window.location.href='logout.php'; }"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
                         </div>
                     </div>
                 </div>

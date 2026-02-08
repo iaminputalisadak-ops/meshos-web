@@ -4,6 +4,9 @@
  */
 session_start();
 
+// Get username for logging (before clearing session)
+$username = $_SESSION['admin_username'] ?? 'Unknown';
+
 // Clear all session data
 $_SESSION = array();
 
@@ -15,8 +18,9 @@ if (isset($_COOKIE[session_name()])) {
 // Destroy the session
 session_destroy();
 
-// Redirect to login page
-header('Location: index.php');
+// Set logout message in a way that can be displayed on login page
+// Using GET parameter for simplicity
+header('Location: index.php?logout=success&user=' . urlencode($username));
 exit;
 ?>
 

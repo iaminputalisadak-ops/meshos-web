@@ -148,8 +148,15 @@ session_start();
             <p>Meesho E-commerce</p>
         </div>
         
-        <div class="error-message" id="errorMessage"></div>
-        <div class="success-message" id="successMessage"></div>
+        <?php if (isset($_GET['logout']) && $_GET['logout'] === 'success'): ?>
+            <div class="success-message" id="successMessage" style="display: block;">
+                <i class="fas fa-check-circle"></i> 
+                You have been successfully logged out<?php echo isset($_GET['user']) ? ' (' . htmlspecialchars($_GET['user']) . ')' : ''; ?>.
+            </div>
+        <?php else: ?>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+        <?php endif; ?>
         
         <form id="loginForm">
             <div class="form-group">

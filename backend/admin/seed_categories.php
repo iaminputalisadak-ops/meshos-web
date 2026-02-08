@@ -19,12 +19,18 @@ require_once '../config/database.php';
 <head>
     <title>Seed Categories</title>
     <style>
+        * { box-sizing: border-box; }
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; background: #f5f5f5; }
         .box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .success { color: #4CAF50; padding: 15px; background: #e8f5e9; border-radius: 5px; margin: 10px 0; }
         .error { color: #f44336; padding: 15px; background: #ffebee; border-radius: 5px; margin: 10px 0; }
         .info { color: #2196F3; padding: 15px; background: #e3f2fd; border-radius: 5px; margin: 10px 0; }
         .btn { display: inline-block; padding: 12px 24px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; margin: 10px 5px; }
+        @media (max-width: 768px) {
+            body { padding: 10px; margin: 20px auto; }
+            .box { padding: 20px; }
+            .btn { display: block; width: 100%; margin: 10px 0; text-align: center; }
+        }
     </style>
 </head>
 <body>
@@ -53,6 +59,28 @@ require_once '../config/database.php';
             $updated = 0;
             $skipped = 0;
             
+            // First, check if icon and image columns exist
+            $hasIcon = false;
+            $hasImage = false;
+            $result = $conn->query("SHOW COLUMNS FROM categories LIKE 'icon'");
+            if ($result && $result->num_rows > 0) {
+                $hasIcon = true;
+            }
+            $result = $conn->query("SHOW COLUMNS FROM categories LIKE 'image'");
+            if ($result && $result->num_rows > 0) {
+                $hasImage = true;
+            }
+            
+            // Add columns if they don't exist
+            if (!$hasIcon) {
+                $conn->query("ALTER TABLE categories ADD COLUMN icon VARCHAR(50) DEFAULT NULL");
+                echo "<div class='info'>ℹ️ Added 'icon' column to categories table</div>";
+            }
+            if (!$hasImage) {
+                $conn->query("ALTER TABLE categories ADD COLUMN image TEXT DEFAULT NULL");
+                echo "<div class='info'>ℹ️ Added 'image' column to categories table</div>";
+            }
+            
             foreach ($categories as $cat) {
                 $name = $cat[0];
                 $slug = $cat[1];
@@ -61,6 +89,10 @@ require_once '../config/database.php';
                 
                 // Check if category exists
                 $check = $conn->prepare("SELECT id FROM categories WHERE slug = ? OR name = ?");
+                if (!$check) {
+                    echo "<div class='error'>❌ Error preparing check query: " . $conn->error . "</div>";
+                    continue;
+                }
                 $check->bind_param("ss", $slug, $name);
                 $check->execute();
                 $result = $check->get_result();
@@ -68,19 +100,33 @@ require_once '../config/database.php';
                 if ($result->num_rows > 0) {
                     // Update existing
                     $update = $conn->prepare("UPDATE categories SET name = ?, icon = ?, image = ? WHERE slug = ?");
+                    if (!$update) {
+                        echo "<div class='error'>❌ Error preparing update query: " . $conn->error . "</div>";
+                        $check->close();
+                        continue;
+                    }
                     $update->bind_param("ssss", $name, $icon, $image, $slug);
                     if ($update->execute()) {
                         $updated++;
                         echo "<div class='info'>✅ Updated: $name</div>";
+                    } else {
+                        echo "<div class='error'>❌ Error updating $name: " . $update->error . "</div>";
                     }
                     $update->close();
                 } else {
                     // Insert new
                     $insert = $conn->prepare("INSERT INTO categories (name, slug, icon, image) VALUES (?, ?, ?, ?)");
+                    if (!$insert) {
+                        echo "<div class='error'>❌ Error preparing insert query: " . $conn->error . "</div>";
+                        $check->close();
+                        continue;
+                    }
                     $insert->bind_param("ssss", $name, $slug, $icon, $image);
                     if ($insert->execute()) {
                         $inserted++;
                         echo "<div class='success'>✅ Added: $name</div>";
+                    } else {
+                        echo "<div class='error'>❌ Error inserting $name: " . $insert->error . "</div>";
                     }
                     $insert->close();
                 }

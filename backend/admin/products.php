@@ -48,9 +48,14 @@ require_once 'includes/header.php';
             <div class="form-row">
                 <div class="form-group">
                     <label for="productCategory">Category *</label>
-                    <select id="productCategory" name="category_id" required>
-                        <option value="">Select Category</option>
+                    <select id="productCategory" name="category_id" required style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 14px;">
+                        <option value="">Select Category *</option>
                     </select>
+                    <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+                        <a href="categories.php" target="_blank" style="color: #667eea; text-decoration: none;">
+                            <i class="fas fa-plus-circle"></i> Add New Category
+                        </a>
+                    </small>
                 </div>
                 <div class="form-group">
                     <label for="productPrice">Price (₹) *</label>
@@ -132,18 +137,40 @@ async function loadProducts() {
 // Load Categories
 async function loadCategories() {
     try {
+        const select = document.getElementById('productCategory');
+        
+        // Show loading state
+        if (select) {
+            select.innerHTML = '<option value="">Loading categories...</option>';
+            select.disabled = true;
+        }
+        
         const data = await apiRequest('../api/categories.php');
         
-        if (data.success) {
+        if (data.success && data.data && data.data.length > 0) {
             categories = data.data || [];
-            const select = document.getElementById('productCategory');
-            select.innerHTML = '<option value="">Select Category</option>';
+            select.innerHTML = '<option value="">Select Category *</option>';
+            
             categories.forEach(cat => {
-                select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+                const icon = cat.icon ? `${cat.icon} ` : '';
+                select.innerHTML += `<option value="${cat.id}">${icon}${cat.name}</option>`;
             });
+            
+            select.disabled = false;
+        } else {
+            select.innerHTML = '<option value="">No categories available. Please add categories first.</option>';
+            select.disabled = true;
+            const message = '⚠️ No categories found. <a href="seed_categories.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">Seed Default Categories</a> or <a href="categories.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">Add Categories Manually</a>';
+            showMessage(message, 'warning');
         }
     } catch (error) {
         console.error('Error loading categories:', error);
+        const select = document.getElementById('productCategory');
+        if (select) {
+            select.innerHTML = '<option value="">Error loading categories</option>';
+            select.disabled = true;
+        }
+        showMessage('Error loading categories. Please refresh the page.', 'error');
     }
 }
 
@@ -183,16 +210,22 @@ function displayProducts(products) {
     container.innerHTML = html;
 }
 
-function showAddProductModal() {
+async function showAddProductModal() {
     editingProductId = null;
     document.getElementById('modalTitle').textContent = 'Add New Product';
     document.getElementById('productForm').reset();
     document.getElementById('productId').value = '';
+    
+    // Ensure categories are loaded before showing modal
+    await loadCategories();
     showModal('productModal');
 }
 
 async function editProduct(id) {
     try {
+        // Load categories first
+        await loadCategories();
+        
         const response = await fetch(`../api/products.php?id=${id}`);
         const data = await response.json();
         

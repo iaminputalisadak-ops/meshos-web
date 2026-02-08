@@ -48,13 +48,14 @@ function showMessage(message, type = 'info') {
     const messageDiv = document.getElementById('message');
     if (!messageDiv) return;
     
-    messageDiv.textContent = message;
+    // Support both text and HTML
+    messageDiv.innerHTML = message;
     messageDiv.className = `message ${type}`;
     messageDiv.style.display = 'block';
     
     setTimeout(() => {
         messageDiv.style.display = 'none';
-    }, 5000);
+    }, 7000); // Increased to 7 seconds for longer messages
 }
 
 // Show Modal
@@ -112,6 +113,11 @@ function formatDate(dateString) {
 // Confirm Delete
 function confirmDelete(message = 'Are you sure you want to delete this item?') {
     return confirm(message);
+}
+
+// Confirm Logout
+function confirmLogout() {
+    return confirm('Are you sure you want to logout?');
 }
 
 // API Request Helper
