@@ -167,9 +167,11 @@ export const subscriptionsAPI = {
   },
 };
 
-export default {
+const api = {
   products: productsAPI,
   categories: categoriesAPI,
   cart: cartAPI,
   subscriptions: subscriptionsAPI,
 };
+
+export default api;

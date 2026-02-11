@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { products as localProducts } from '../../data/products';
-import { useProduct, useProducts } from '../../hooks/useProducts';
+import { useProduct } from '../../hooks/useProducts';
 import { useCart } from '../../context/CartContext';
 import './ProductDetail.css';
 

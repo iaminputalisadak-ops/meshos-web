@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { useSubscription } from '../../context/SubscriptionContext';
+// import { useSubscription } from '../../context/SubscriptionContext'; // Reserved for future use
 import './Header.css';
 
 const Header = () => {
@@ -9,7 +9,7 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { getCartItemsCount } = useCart();
-  const { isSubscribed, subscription } = useSubscription();
+  // const { isSubscribed, subscription } = useSubscription(); // Reserved for future use
   
   // Get current category from URL
   const currentCategory = location.pathname.startsWith('/category/') 
