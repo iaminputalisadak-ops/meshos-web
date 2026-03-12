@@ -23,8 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-require_once '../../config/database.php';
-require_once '../../config/cors.php';
+session_set_cookie_params(['path' => '/', 'httponly' => true, 'samesite' => 'Lax']);
+
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../config/cors.php';
 
 // Start session
 if (session_status() === PHP_SESSION_NONE) {

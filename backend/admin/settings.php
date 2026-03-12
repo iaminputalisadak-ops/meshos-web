@@ -16,7 +16,7 @@ require_once 'includes/header.php';
 $dbName = 'N/A';
 $dbStatus = 'Unknown';
 try {
-    require_once '../config/database.php';
+    require_once __DIR__ . '/../config/database.php';
     $dbName = DB_NAME;
     $conn = getDBConnection();
     if ($conn) {

@@ -4,11 +4,11 @@
  * CRUD operations for products (requires admin authentication)
  */
 
-require_once '../../config/database.php';
-require_once '../../config/cors.php';
-require_once '../../config/error_handler.php';
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../config/cors.php';
+require_once __DIR__ . '/../../config/error_handler.php';
 
-// Check admin authentication
+session_set_cookie_params(['path' => '/', 'httponly' => true, 'samesite' => 'Lax']);
 session_start();
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     http_response_code(401);

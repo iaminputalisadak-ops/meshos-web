@@ -147,19 +147,20 @@ ini_set('display_errors', 1);
                 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 
-                echo "<div class='info'>HTTP Status: <code>$httpCode</code></div>";
-                echo "<div class='info'>Response: <pre>" . htmlspecialchars($response) . "</pre></div>";
-                
                 $jsonData = json_decode($response, true);
                 if ($jsonData && isset($jsonData['success'])) {
                     if ($jsonData['success']) {
-                        echo "<div class='success'>✅ Login handler works!</div>";
+                        echo "<div class='success'>✅ Login API works! HTTP $httpCode – Login successful. You can use the admin panel.</div>";
+                        echo "<details style='margin-top:10px;'><summary style='cursor:pointer;color:#2196F3;'>Show raw response</summary>";
+                        echo "<pre style='margin-top:8px;'>" . htmlspecialchars($response) . "</pre></details>";
                     } else {
-                        echo "<div class='error'>❌ Login handler error: " . ($jsonData['message'] ?? 'Unknown error') . "</div>";
+                        echo "<div class='error'>❌ Login API error: " . htmlspecialchars($jsonData['message'] ?? 'Unknown error') . "</div>";
+                        echo "<div class='info'>HTTP Status: <code>$httpCode</code><br>Response: <pre>" . htmlspecialchars($response) . "</pre></div>";
                         $allGood = false;
                     }
                 } else {
-                    echo "<div class='error'>❌ Invalid JSON response from login handler</div>";
+                    echo "<div class='error'>❌ Invalid response from login API (expected JSON with success field).</div>";
+                    echo "<div class='info'>HTTP Status: <code>$httpCode</code><br>Response: <pre>" . htmlspecialchars($response) . "</pre></div>";
                     $allGood = false;
                 }
             } else {

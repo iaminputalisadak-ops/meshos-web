@@ -168,10 +168,8 @@ INSERT INTO categories (name, slug) VALUES
 ON DUPLICATE KEY UPDATE name=VALUES(name);
 
 -- Insert Default Admin User
--- Username: admin
--- Password: admin123
--- Password is hashed using password_hash() with PASSWORD_DEFAULT
+-- Username: admin / Password: admin123 (bcrypt hash below)
 INSERT INTO admin_users (username, email, password, full_name, role, status) VALUES
-('admin', 'admin@meesho.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrator', 'super_admin', 'active')
+('admin', 'admin@meesho.com', '$2y$10$X7jVamKJvDL4YyTwZEA2He8E5h6I6l0v21ddddgANwChC1arKGJl.', 'Administrator', 'super_admin', 'active')
 ON DUPLICATE KEY UPDATE username=VALUES(username);
 

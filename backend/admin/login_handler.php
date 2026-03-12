@@ -12,6 +12,13 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
+// Session cookie: make it available for entire site so admin + api/admin share session
+session_set_cookie_params([
+    'path' => '/',
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+
 // Set headers FIRST
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -141,7 +148,7 @@ try {
     
     $conn->close();
     
-    // Start session
+    // Start session (cookie params already set above for path=/)
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }

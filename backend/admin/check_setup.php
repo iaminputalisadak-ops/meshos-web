@@ -12,12 +12,12 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
 try {
-    require_once '../config/database.php';
+    require_once __DIR__ . '/../config/database.php';
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
         'message' => 'Database config not found: ' . $e->getMessage(),
-        'setup_url' => '../setup.php'
+        'setup_url' => '../database/setup_database.php'
     ]);
     exit;
 }
@@ -30,7 +30,7 @@ try {
             'success' => false,
             'message' => 'Cannot connect to MySQL. Make sure MySQL is running in XAMPP.',
             'error' => $conn->connect_error,
-            'setup_url' => '../setup.php'
+            'setup_url' => '../database/setup_database.php'
         ]);
         exit;
     }
@@ -42,7 +42,7 @@ try {
             'success' => false,
             'message' => 'Database does not exist. Please run setup.',
             'setup_needed' => true,
-            'setup_url' => '../setup.php'
+            'setup_url' => '../database/setup_database.php'
         ]);
         exit;
     }
@@ -56,7 +56,7 @@ try {
             'success' => false,
             'message' => 'Tables not set up. Please run setup.',
             'setup_needed' => true,
-            'setup_url' => '../setup.php'
+            'setup_url' => '../database/setup_database.php'
         ]);
         exit;
     }
@@ -67,7 +67,7 @@ try {
         echo json_encode([
             'success' => false,
             'message' => 'Error checking admin users.',
-            'setup_url' => '../setup.php'
+            'setup_url' => '../database/setup_database.php'
         ]);
         exit;
     }
@@ -79,7 +79,7 @@ try {
             'success' => false,
             'message' => 'No admin users found. Please run setup.',
             'setup_needed' => true,
-            'setup_url' => '../setup.php'
+            'setup_url' => '../database/setup_database.php'
         ]);
         exit;
     }
@@ -97,14 +97,14 @@ try {
         'success' => false,
         'message' => 'Error: ' . $e->getMessage(),
         'error' => $e->getMessage(),
-        'setup_url' => '../setup.php'
+        'setup_url' => '../database/setup_database.php'
     ]);
 } catch (Error $e) {
     echo json_encode([
         'success' => false,
         'message' => 'Fatal error: ' . $e->getMessage(),
         'error' => $e->getMessage(),
-        'setup_url' => '../setup.php'
+        'setup_url' => '../database/setup_database.php'
     ]);
 }
 ?>

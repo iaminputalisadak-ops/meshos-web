@@ -184,7 +184,7 @@ session_start();
             <strong>⚠️ Having Login Issues?</strong><br>
             <small>
                 <a href="fix_login_now.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">👉 Fix Login Now</a> | 
-                <a href="../setup.php" target="_blank" style="color: #667eea; text-decoration: underline;">Database Setup</a> | 
+                <a href="../database/setup_database.php" target="_blank" style="color: #667eea; text-decoration: underline;">Database Setup</a> | 
                 <a href="test.php" target="_blank" style="color: #667eea; text-decoration: underline;">Test Login</a>
             </small>
         </div>
@@ -260,7 +260,7 @@ session_start();
                     
                     errorMsg += '<br><br>';
                     errorMsg += '<a href="fix_login_now.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold; margin-right: 10px;">👉 Fix Login Now</a>';
-                    errorMsg += '<a href="../setup.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">👉 Run Database Setup</a>';
+                    errorMsg += '<a href="../database/setup_database.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">👉 Run Database Setup</a>';
                     
                     errorDiv.innerHTML = errorMsg;
                     errorDiv.style.display = 'block';
@@ -306,7 +306,7 @@ session_start();
                 
                 // Add helpful links
                 errorMsg += '<br><br>';
-                errorMsg += '<a href="../EMERGENCY_FIX.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">👉 Run Emergency Fix</a> | ';
+                errorMsg += '<a href="../database/setup_database.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">👉 Run Database Setup</a> | ';
                 errorMsg += '<a href="test_direct_login.php" target="_blank" style="color: #667eea; text-decoration: underline;">Test Login API</a>';
                 
                 errorDiv.innerHTML = errorMsg;
@@ -328,9 +328,9 @@ session_start();
                 const errorDiv = document.getElementById('errorMessage');
                 let errorMsg = data.message || 'Database setup required';
                 if (data.setup_url) {
-                    errorMsg += ' <a href="' + data.setup_url + '" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold; margin-left: 10px;">👉 Setup Database Now</a>';
+                    errorMsg += ' <a href="' + (data.setup_url || '../database/setup_database.php') + '" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold; margin-left: 10px;">👉 Setup Database Now</a>';
                 } else {
-                    errorMsg += ' <a href="../setup.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold; margin-left: 10px;">👉 Setup Database Now</a>';
+                    errorMsg += ' <a href="../database/setup_database.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold; margin-left: 10px;">👉 Setup Database Now</a>';
                 }
                 errorDiv.innerHTML = errorMsg;
                 errorDiv.style.display = 'block';
@@ -339,7 +339,7 @@ session_start();
         .catch(err => {
             console.error('Setup check error:', err);
             const errorDiv = document.getElementById('errorMessage');
-            errorDiv.innerHTML = 'Cannot check database status. <a href="fix_login_now.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold; margin-right: 10px;">👉 Fix Login Now</a><a href="../setup.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">👉 Setup Database</a>';
+            errorDiv.innerHTML = 'Cannot check database status. <a href="fix_login_now.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold; margin-right: 10px;">👉 Fix Login Now</a> <a href="../database/setup_database.php" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: bold;">👉 Setup Database</a>';
             errorDiv.style.display = 'block';
         });
         
