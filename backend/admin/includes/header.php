@@ -48,6 +48,14 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                     <i class="fas fa-star"></i>
                     <span>Brands</span>
                 </a>
+                <a href="promoters.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'promoters.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Promoters</span>
+                </a>
+                <a href="commissions.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'commissions.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-rupee-sign"></i>
+                    <span>Commissions</span>
+                </a>
                 <a href="settings.php" class="nav-item <?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>

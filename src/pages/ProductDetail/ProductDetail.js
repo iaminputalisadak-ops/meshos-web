@@ -1,14 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { products as localProducts } from '../../data/products';
 import { useProduct } from '../../hooks/useProducts';
 import { useCart } from '../../context/CartContext';
+import API_BASE_URL from '../../config/api';
 import './ProductDetail.css';
 
 const ProductDetail = () => {
   const { productId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  
+  // Referral tracking: if URL has ?ref=CODE, track it (backend sets 30-day cookie)
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref && productId) {
+      fetch(`${API_BASE_URL}/referral/track.php?ref=${encodeURIComponent(ref)}&product_id=${productId}`, { credentials: 'include' })
+        .catch(() => {});
+    }
+  }, [productId, searchParams]);
   
   // Fetch from API
   const { product: apiProduct, loading, error } = useProduct(parseInt(productId));
