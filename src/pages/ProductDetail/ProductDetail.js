@@ -12,10 +12,13 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   
-  // Referral tracking: if URL has ?ref=CODE, track it (backend sets 30-day cookie)
   useEffect(() => {
+    const partner = searchParams.get('partner');
     const ref = searchParams.get('ref');
-    if (ref && productId) {
+    if (partner && productId) {
+      fetch(`${API_BASE_URL}/partner/track.php?partner=${encodeURIComponent(partner)}&product_id=${productId}`, { credentials: 'include' })
+        .catch(() => {});
+    } else if (ref && productId) {
       fetch(`${API_BASE_URL}/referral/track.php?ref=${encodeURIComponent(ref)}&product_id=${productId}`, { credentials: 'include' })
         .catch(() => {});
     }

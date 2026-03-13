@@ -14,6 +14,9 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import PromoterRegister from './pages/Promoter/PromoterRegister';
 import PromoterLogin from './pages/Promoter/PromoterLogin';
 import PromoterDashboard from './pages/Promoter/PromoterDashboard';
+import CreatorRegister from './pages/Creator/CreatorRegister';
+import CreatorLogin from './pages/Creator/CreatorLogin';
+import CreatorDashboard from './pages/Creator/CreatorDashboard';
 import { CartProvider } from './context/CartContext';
 import { SubscriptionProvider } from './context/SubscriptionContext';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
@@ -40,6 +43,9 @@ function App() {
                 <Route path="/promoter/register" element={<PromoterRegister />} />
                 <Route path="/promoter/login" element={<PromoterLogin />} />
                 <Route path="/promoter/dashboard" element={<PromoterDashboard />} />
+                <Route path="/creator/register" element={<CreatorRegister />} />
+                <Route path="/creator/login" element={<CreatorLogin />} />
+                <Route path="/creator/dashboard" element={<CreatorDashboard />} />
                 <Route path="/supplier" element={<div className="container" style={{padding: '40px 20px', textAlign: 'center'}}><h1>Become a Supplier</h1><p>Join Meesho as a supplier and grow your business!</p></div>} />
                 <Route path="/investor" element={<div className="container" style={{padding: '40px 20px', textAlign: 'center'}}><h1>Investor Relations</h1><p>Learn about Meesho's investor relations and financial information.</p></div>} />
               </Routes>

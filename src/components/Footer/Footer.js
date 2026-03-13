@@ -49,7 +49,7 @@ const Footer = () => {
             <h3 className="footer-heading">Careers</h3>
             <ul className="footer-links">
               <li>
-                <Link to="/promoter/register">Become a Promoter</Link>
+                <Link to="/creator/register">Join Creator Partner Program</Link>
               </li>
               <li>
                 <Link to="/supplier">Become a supplier</Link>

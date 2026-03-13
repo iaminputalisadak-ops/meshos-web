@@ -92,38 +92,76 @@ function handleCreateOrder($conn) {
     $shippingAddress = isset($data['shipping_address']) ? $data['shipping_address'] : '';
     $paymentMethod = isset($data['payment_method']) ? $data['payment_method'] : 'cod';
     
-    $promoterId = isset($data['promoter_id']) ? (int) $data['promoter_id'] : (isset($_COOKIE['ref_promo_id']) ? (int) $_COOKIE['ref_promo_id'] : null);
-    $referralCode = isset($data['referral_code']) ? trim($data['referral_code']) : (isset($_COOKIE['ref_promo_code']) ? trim($_COOKIE['ref_promo_code']) : null);
-    
-    if ($promoterId && $referralCode) {
+    // Creator Partner attribution (new system using ?partner= cookies)
+    $creatorId     = isset($data['creator_id']) ? (int) $data['creator_id'] : (isset($_COOKIE['partner_creator_id']) ? (int) $_COOKIE['partner_creator_id'] : null);
+    $creatorCode   = isset($data['creator_code']) ? trim($data['creator_code']) : (isset($_COOKIE['partner_code']) ? trim($_COOKIE['partner_code']) : null);
+    $membershipId  = isset($data['membership_id']) ? (int) $data['membership_id'] : (isset($_COOKIE['partner_membership_id']) ? (int) $_COOKIE['partner_membership_id'] : null);
+
+    // Also check old promoter cookies as fallback
+    $promoterId    = isset($data['promoter_id']) ? (int) $data['promoter_id'] : (isset($_COOKIE['ref_promo_id']) ? (int) $_COOKIE['ref_promo_id'] : null);
+    $referralCode  = isset($data['referral_code']) ? trim($data['referral_code']) : (isset($_COOKIE['ref_promo_code']) ? trim($_COOKIE['ref_promo_code']) : null);
+
+    $commissionRate = null;
+    $commissionAmt  = null;
+
+    if ($creatorId && $creatorCode) {
+        $chk = $conn->prepare("SELECT cp.id, cp.user_id, cp.commission_rate FROM creator_profiles cp WHERE cp.id = ? AND cp.creator_code = ? AND cp.approval_status = 'approved'");
+        $chk->bind_param("is", $creatorId, $creatorCode);
+        $chk->execute();
+        $cr = $chk->get_result()->fetch_assoc();
+        $chk->close();
+
+        if (!$cr) {
+            $creatorId = null; $creatorCode = null; $membershipId = null;
+        } elseif ($userId && (int) $cr['user_id'] === $userId) {
+            $creatorId = null; $creatorCode = null; $membershipId = null;
+        } else {
+            $memActive = false;
+            if ($membershipId) {
+                $memChk = $conn->prepare("SELECT id, expires_at FROM creator_memberships WHERE id = ? AND creator_id = ? AND admin_approval = 'approved' AND payment_status = 'paid'");
+                $memChk->bind_param("ii", $membershipId, $creatorId);
+                $memChk->execute();
+                $memRow = $memChk->get_result()->fetch_assoc();
+                $memChk->close();
+                if ($memRow && $memRow['expires_at'] && strtotime($memRow['expires_at']) > time()) {
+                    $memActive = true;
+                }
+            }
+            if (!$memActive) {
+                $creatorId = null; $creatorCode = null; $membershipId = null;
+            } else {
+                $commissionRate = (float) $cr['commission_rate'];
+                $commissionAmt = round($finalAmount * ($commissionRate / 100), 2);
+            }
+        }
+    } else {
+        $creatorId = null; $creatorCode = null; $membershipId = null;
+    }
+
+    if (!$creatorId && $promoterId && $referralCode) {
         $chk = $conn->prepare("SELECT pp.id, pp.user_id FROM promoter_profiles pp WHERE pp.id = ? AND pp.code = ? AND pp.status = 'approved'");
         $chk->bind_param("is", $promoterId, $referralCode);
         $chk->execute();
         $pr = $chk->get_result()->fetch_assoc();
         $chk->close();
-        if (!$pr) {
-            $promoterId = null;
-            $referralCode = null;
-        } elseif ($userId && (int) $pr['user_id'] === $userId) {
-            $promoterId = null;
-            $referralCode = null;
+        if (!$pr || ($userId && (int) $pr['user_id'] === $userId)) {
+            $promoterId = null; $referralCode = null;
         }
     } else {
-        $promoterId = null;
-        $referralCode = null;
+        $promoterId = null; $referralCode = null;
     }
-    
-    $stmt = $conn->prepare("INSERT INTO orders (user_id, session_id, total_amount, discount_amount, final_amount, status, shipping_address, payment_method, promoter_id, referral_code) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)");
-    $stmt->bind_param("isdddssis", $userId, $sessionId, $totalAmount, $discountAmount, $finalAmount, $shippingAddress, $paymentMethod, $promoterId, $referralCode);
+
+    $stmt = $conn->prepare("INSERT INTO orders (user_id, session_id, total_amount, discount_amount, final_amount, status, shipping_address, payment_method, promoter_id, referral_code, creator_id, membership_id, creator_code, commission_percentage, commission_amount) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("isdddssisissdd", $userId, $sessionId, $totalAmount, $discountAmount, $finalAmount, $shippingAddress, $paymentMethod, $promoterId, $referralCode, $creatorId, $membershipId, $creatorCode, $commissionRate, $commissionAmt);
     if (!$stmt->execute()) {
         $stmt->close();
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Failed to create order']);
+        echo json_encode(['success' => false, 'message' => 'Failed to create order: ' . $conn->error]);
         return;
     }
     $orderId = $conn->insert_id;
     $stmt->close();
-    
+
     foreach ($data['items'] as $item) {
         $pid = (int) ($item['product_id'] ?? $item['id']);
         $qty = (int) ($item['quantity'] ?? 1);
@@ -135,8 +173,14 @@ function handleCreateOrder($conn) {
         $ins->execute();
         $ins->close();
     }
-    
-    if ($promoterId) {
+
+    if ($creatorId && $commissionRate !== null) {
+        $insComm = $conn->prepare("INSERT INTO creator_commissions (creator_id, membership_id, order_id, sale_amount, commission_rate, commission_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')");
+        $insComm->bind_param("iiiddd", $creatorId, $membershipId, $orderId, $finalAmount, $commissionRate, $commissionAmt);
+        $insComm->execute();
+        $insComm->close();
+        $conn->query("UPDATE creator_profiles SET total_orders = total_orders + 1, total_sales = total_sales + $finalAmount WHERE id = $creatorId");
+    } elseif ($promoterId) {
         $rate = 10.0;
         $commAmount = round($finalAmount * ($rate / 100), 2);
         $insComm = $conn->prepare("INSERT INTO commissions (promoter_id, order_id, order_amount, commission_rate, commission_amount, status) VALUES (?, ?, ?, ?, ?, 'pending')");
@@ -145,7 +189,7 @@ function handleCreateOrder($conn) {
         $insComm->close();
         $conn->query("UPDATE promoter_profiles SET total_orders = total_orders + 1, total_sales = total_sales + $finalAmount, pending_commission = pending_commission + $commAmount WHERE id = $promoterId");
     }
-    
+
     echo json_encode([
         'success' => true,
         'message' => 'Order placed successfully',

@@ -33,7 +33,7 @@ if (!$orderId || !in_array($newStatus, $allowed, true)) {
 
 $conn = getDBConnection();
 
-$stmt = $conn->prepare("SELECT id, promoter_id, status FROM orders WHERE id = ?");
+$stmt = $conn->prepare("SELECT id, promoter_id, creator_id, status FROM orders WHERE id = ?");
 $stmt->bind_param("i", $orderId);
 $stmt->execute();
 $order = $stmt->get_result()->fetch_assoc();
@@ -48,7 +48,26 @@ if (!$order) {
 
 $conn->query("UPDATE orders SET status = '$newStatus' WHERE id = $orderId");
 
-if (!empty($order['promoter_id'])) {
+// Handle Creator Partner commissions
+if (!empty($order['creator_id'])) {
+    $cid = (int) $order['creator_id'];
+    if ($newStatus === 'delivered') {
+        $conn->query("UPDATE creator_commissions SET status = 'approved', approved_at = NOW() WHERE order_id = $orderId AND status = 'pending'");
+        $row = $conn->query("SELECT commission_amount FROM creator_commissions WHERE order_id = $orderId")->fetch_assoc();
+        if ($row) {
+            $amt = (float) $row['commission_amount'];
+            $conn->query("UPDATE creator_profiles SET total_earned = total_earned + $amt, wallet_balance = wallet_balance + $amt WHERE id = $cid");
+            $balance = $conn->query("SELECT wallet_balance FROM creator_profiles WHERE id = $cid")->fetch_assoc()['wallet_balance'];
+            $conn->query("INSERT INTO creator_wallet_transactions (creator_id, type, source, amount, reference_id, balance_after, description) VALUES ($cid, 'credit', 'commission', $amt, $orderId, $balance, 'Commission from order #$orderId')");
+        }
+    } elseif ($newStatus === 'cancelled') {
+        $conn->query("UPDATE creator_commissions SET status = 'rejected' WHERE order_id = $orderId AND status = 'pending'");
+        $conn->query("UPDATE creator_profiles SET total_orders = GREATEST(total_orders - 1, 0) WHERE id = $cid");
+    }
+}
+
+// Handle old promoter commissions (backward compat)
+if (!empty($order['promoter_id']) && empty($order['creator_id'])) {
     $pid = (int) $order['promoter_id'];
     if ($newStatus === 'delivered') {
         $conn->query("UPDATE commissions SET status = 'approved', approved_at = NOW() WHERE order_id = $orderId AND status = 'pending'");

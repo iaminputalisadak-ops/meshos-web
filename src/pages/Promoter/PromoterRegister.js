@@ -25,7 +25,15 @@ const PromoterRegister = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, phone, password }),
       });
-      const data = await res.json().catch(() => ({ success: false, message: 'Invalid response from server' }));
+      const text = await res.text();
+      let data;
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        setIsError(true);
+        setMessage('Invalid response from server. Make sure MySQL is running and you have run backend/database/affiliate_schema.sql.');
+        return;
+      }
       if (data.success) {
         setIsError(false);
         setMessage(data.message || 'Registration successful! Wait for admin approval.');
@@ -36,7 +44,7 @@ const PromoterRegister = () => {
       }
     } catch (err) {
       setIsError(true);
-      setMessage('Cannot reach backend. 1) Open XAMPP and start Apache. 2) Confirm this link works in your browser: http://localhost/Shopping/backend/api/promoter/register.php');
+      setMessage('Backend not reachable. Easiest: stop npm, then run "npm run dev" (starts backend + frontend). Or run backend\\start-server.bat in a separate window, then refresh.');
     } finally {
       setLoading(false);
     }

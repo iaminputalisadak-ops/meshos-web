@@ -4,13 +4,15 @@
  * POST: name, email, phone, password => creates user + promoter_profile (pending)
  */
 
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../config/cors.php';
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
+require_once __DIR__ . '/../../config/cors.php';
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../../config/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Method not allowed']);
     exit;
 }
@@ -22,19 +24,23 @@ $phone = trim($input['phone'] ?? '');
 $password = $input['password'] ?? '';
 
 if (!$name || !$email || !$password) {
-    http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Name, email and password are required']);
     exit;
 }
 
 if (strlen($password) < 6) {
-    http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Password must be at least 6 characters']);
     exit;
 }
 
-$conn = getDBConnection();
+try {
+    $conn = getDBConnection();
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => 'Database error. Make sure MySQL is running and the database exists.']);
+    exit;
+}
 
+try {
 // Check if user already exists
 $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
 $stmt->bind_param("s", $email);
@@ -108,3 +114,8 @@ echo json_encode([
         'status' => 'pending'
     ]
 ]);
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => 'Server error. Make sure MySQL is running and the affiliate tables exist (run backend/database/affiliate_schema.sql).']);
+} catch (Throwable $e) {
+    echo json_encode(['success' => false, 'message' => 'Server error. Make sure MySQL is running and the affiliate tables exist (run backend/database/affiliate_schema.sql).']);
+}

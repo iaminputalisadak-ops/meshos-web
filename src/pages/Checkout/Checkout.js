@@ -8,11 +8,16 @@ const Checkout = () => {
   const { cartItems, getCartTotal, clearCart } = useCart();
   const navigate = useNavigate();
   const [referral, setReferral] = useState(null);
+  const [partnerRef, setPartnerRef] = useState(null);
   const [address, setAddress] = useState('');
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    fetch(`${API_BASE_URL}/partner/get.php`, { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => { if (d.success && d.data) setPartnerRef(d.data); })
+      .catch(() => {});
     fetch(`${API_BASE_URL}/referral/get.php`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => d.success && d.data && setReferral(d.data))
@@ -49,6 +54,9 @@ const Checkout = () => {
           final_amount: finalTotal,
           shipping_address: address.trim(),
           payment_method: 'cod',
+          creator_id: partnerRef ? partnerRef.creator_id : null,
+          creator_code: partnerRef ? partnerRef.code : null,
+          membership_id: partnerRef ? partnerRef.membership_id : null,
           promoter_id: referral ? referral.promoter_id : null,
           referral_code: referral ? referral.code : null,
         }),
@@ -91,7 +99,8 @@ const Checkout = () => {
           <p>Subtotal: ₹{subtotal.toFixed(2)}</p>
           <p>Delivery: {delivery === 0 ? 'FREE' : `₹${delivery}`}</p>
           <p><strong>Total: ₹{finalTotal.toFixed(2)}</strong></p>
-          {referral && <p className="ref-note">Referred by promoter (ref: {referral.code})</p>}
+          {partnerRef && <p className="ref-note">Referred by Creator Partner ({partnerRef.code})</p>}
+          {!partnerRef && referral && <p className="ref-note">Referred by promoter (ref: {referral.code})</p>}
         </div>
         <button className="place-order-btn" onClick={handlePlaceOrder} disabled={placing}>
           {placing ? 'Placing Order...' : 'Place Order'}
